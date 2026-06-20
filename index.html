@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mustafa'nın Doğum Günü</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            padding: 3rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+        }
+        .birthday-message {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            display: none;
+            animation: fadeIn 2s ease-in-out;
+        }
+        .birthday-message span {
+            display: block;
+            font-size: 1.5rem;
+            color: #ff6b6b;
+            margin-top: 1rem;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+        .countdown {
+            display: none;
+        }
+        .countdown h2 {
+            font-size: 1.8rem;
+            color: #e0e0e0;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        .countdown .name {
+            color: #ffd700;
+            font-weight: 700;
+        }
+        .timer {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .timer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .timer-item .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            min-width: 90px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .timer-item .label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0.8;
+            animation: confettiFall linear infinite;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .balloons {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+            display: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        @media (max-width: 480px) {
+            .container { padding: 2rem 1rem; }
+            .birthday-message { font-size: 2rem; }
+            .timer-item .number { font-size: 2rem; min-width: 70px; padding: 0.8rem 1rem; }
+            .countdown h2 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<div class="container">
+    <div class="balloons" id="balloons">🎈🎉🎈</div>
+
+    <div class="birthday-message" id="birthdayMessage">
+        🎂 İyiki doğdun Mustafa! 🎂
+        <span>🎉 Nice mutlu yıllara! 🎉</span>
+    </div>
+
+    <div class="countdown" id="countdown">
+        <h2>Mustafa'nın doğum gününe kalan süre</h2>
+        <div class="timer">
+            <div class="timer-item">
+                <div class="number" id="days">0</div>
+                <div class="label">Gün</div>
+            </div>
+            <div class="timer-item">
+                <div class="number" id="hours">0</div>
+                <div class="label">Saat</div>
+            </div>
+            <div class="timer-item">
+                <div class="number" id="minutes">0</div>
+                <div class="label">Dakika</div>
+            </div>
+            <div class="timer-item">
+                <div class="number" id="seconds">0</div>
+                <div class="label">Saniye</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BIRTH_MONTH = 3; // Nisan = ay 3 (0-indexed)
+    const BIRTH_DAY = 19;
+
+    function getNextBirthday(now) {
+        const year = now.getFullYear();
+        const thisYear = new Date(year, BIRTH_MONTH, BIRTH_DAY);
+        if (now > thisYear) {
+            return new Date(year + 1, BIRTH_MONTH, BIRTH_DAY);
+        }
+        return thisYear;
+    }
+
+    function isBirthday(now) {
+        return now.getMonth() === BIRTH_MONTH && now.getDate() === BIRTH_DAY;
+    }
+
+    function createConfetti() {
+        const container = document.getElementById('confettiContainer');
+        const colors = ['#ffd700', '#ff6b6b', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#01a3a4', '#f368e0'];
+        for (let i = 0; i < 80; i++) {
+            const el = document.createElement('div');
+            el.className = 'confetti';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.background = colors[Math.floor(Math.random() * colors.length)];
+            el.style.width = (Math.random() * 8 + 4) + 'px';
+            el.style.height = (Math.random() * 8 + 4) + 'px';
+            el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            el.style.animationDelay = (Math.random() * 5) + 's';
+            container.appendChild(el);
+        }
+    }
+
+    function update() {
+        const now = new Date();
+        const birthday = isBirthday(now);
+
+        document.getElementById('birthdayMessage').style.display = birthday ? 'block' : 'none';
+        document.getElementById('countdown').style.display = birthday ? 'none' : 'block';
+        document.getElementById('balloons').style.display = birthday ? 'block' : 'none';
+
+        if (birthday) {
+            document.title = '🎂 İyiki doğdun Mustafa! 🎂';
+            document.body.style.background = 'linear-gradient(135deg, #2d1b4e, #1a1a2e, #0f3460)';
+        } else {
+            document.title = 'Mustafa\'nın Doğum Günü';
+            document.body.style.background = 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)';
+            const next = getNextBirthday(now);
+            const diff = next - now;
+            document.getElementById('days').textContent = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('hours').textContent = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            document.getElementById('minutes').textContent = Math.floor((diff / (1000 * 60)) % 60);
+            document.getElementById('seconds').textContent = Math.floor((diff / 1000) % 60);
+        }
+    }
+
+    if (isBirthday(new Date())) {
+        createConfetti();
+    }
+
+    update();
+    setInterval(update, 1000);
+</script>
+
+</body>
+</html>
